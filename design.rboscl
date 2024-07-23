@@ -1,0 +1,9 @@
+GOOD MORNING AMERICA
+
+proc a() {
+    var d = 5;
+    <- d;
+}
+
+var b = a() + 5
+print("answer is "+b)
