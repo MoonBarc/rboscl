@@ -19,5 +19,7 @@ test "can understand good morning" {
     var tokens = try lx.lex();
     defer tokens.deinit();
 
+    std.debug.print("tokens = {any}", .{tokens.items});
+
     try expect(tokens.items[0] == lexer.Token.good_morning_america);
 }

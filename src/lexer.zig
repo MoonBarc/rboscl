@@ -36,6 +36,7 @@ pub const Lexer = struct {
 
     fn gma(self: *Lexer) !Token {
         if (self.source.len >= GMA_DECL.len and std.mem.eql(u8, GMA_DECL, self.source[0..GMA_DECL.len])) {
+            self.at = GMA_DECL.len - 1;
             return Token.good_morning_america;
         } else {
             return error.DidNotSayGoodMorning;
@@ -43,7 +44,8 @@ pub const Lexer = struct {
     }
 
     fn next(self: *Lexer) !Token {
-        if (self.at > self.source.len) {
+        self.at += 1;
+        if (self.at >= self.source.len) {
             return Token.eof;
         }
         const curr = self.source[self.at];
