@@ -10,7 +10,7 @@ const expect = std.testing.expect;
 
 test "can understand good morning" {
     const alloc = std.testing.allocator;
-    const good_program = "GOOD MORNING AMERICA!!!()";
+    const good_program = "GOOD MORNING AMERICA!!!   () )";
     const good_source = try alloc.alloc(u8, good_program.len);
     std.mem.copyForwards(u8, good_source, good_program);
     defer alloc.free(good_source);

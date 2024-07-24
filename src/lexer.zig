@@ -23,10 +23,11 @@ pub const Lexer = struct {
     pub fn lex(self: *Lexer) !std.ArrayList(Token) {
         var tok = std.ArrayList(Token).init(self.alloc);
         // expect gma
-        try tok.append(try gma(self));
+        try tok.append(try self.gma());
 
         while (true) {
-            const cur = try next(self);
+            self.skip_whitespace();
+            const cur = try self.next();
             if (cur == Token.eof) break;
             try tok.append(cur);
         }
@@ -36,20 +37,58 @@ pub const Lexer = struct {
 
     fn gma(self: *Lexer) !Token {
         if (self.source.len >= GMA_DECL.len and std.mem.eql(u8, GMA_DECL, self.source[0..GMA_DECL.len])) {
-            self.at = GMA_DECL.len - 1;
+            self.at = GMA_DECL.len;
             return Token.good_morning_america;
         } else {
             return error.DidNotSayGoodMorning;
         }
     }
 
-    fn next(self: *Lexer) !Token {
+    /// returns current and advances
+    fn advance(self: *Lexer) u8 {
+        const char = self.current();
+        self.skip();
+        return char;
+    }
+
+    fn skip(self: *Lexer) void {
         self.at += 1;
-        if (self.at >= self.source.len) {
-            return Token.eof;
+    }
+
+    fn peek_n(self: *Lexer, i: usize) u8 {
+        if (self.at + i >= self.source.len) {
+            return '\x00';
+        } else {
+            return self.source[self.at + i];
         }
-        const curr = self.source[self.at];
+    }
+
+    fn current(self: *Lexer) u8 {
+        return self.peek_n(0);
+    }
+
+    fn skip_whitespace(self: *Lexer) void {
+        while (self.at <= self.source.len) {
+            const n = self.current();
+            switch (n) {
+                ' ' | '\t' | '\n' => {
+                    // whitespace!
+                    self.skip();
+                },
+                else => {
+                    // not whitespace
+                    break;
+                },
+            }
+        }
+    }
+
+    fn next(self: *Lexer) !Token {
+        const curr = self.advance();
         switch (curr) {
+            '\x00' => {
+                return Token.eof;
+            },
             '(' => {
                 return Token.lparen;
             },
@@ -57,6 +96,7 @@ pub const Lexer = struct {
                 return Token.rparen;
             },
             else => {
+                std.debug.print("unex = '{c}'", .{curr});
                 return error.UnexpectedCharacter;
             },
         }
